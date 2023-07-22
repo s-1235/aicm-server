@@ -1,0 +1,5 @@
+RewriteEngine On
+RewriteCond %{HTTPS}  !=on
+RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R,L]
+RewriteRule ^(.*)$ http://nodejsapp/$1 [P,L]
+
