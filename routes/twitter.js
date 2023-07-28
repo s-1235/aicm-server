@@ -12,7 +12,7 @@ const tweetsAndActivity = require('../controllers/tweetsandActivity');
 const SendDirectMessage = require('../controllers/sendMessagetoUser');
 const TwitterCRON = require('./../twittercron');
 const fetchSavedData = require('./../controllers/fetchSavedData');
-
+const followers = require('./../controllers/pullFollowers');
 
 //importation du middleware/password :
 const auth = require('../middleware/auth');
@@ -38,6 +38,7 @@ router.post('/sendWelcome', TwitterCRON.sendWelcomeDMs);
 router.get('/savedTweets', fetchSavedData.getSavedTweets);
 router.get('/savedMostActiveUsers', fetchSavedData.getMostActiveUsers);
 router.get('/savedMostActiveUserForATweet/:id', fetchSavedData.getMostActiveUsersForTweet);
+router.get('/followers', followers.getFollowers);
 
 //Exportation du fichier user.js de routes :
 module.exports = router;
