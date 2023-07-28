@@ -13,6 +13,8 @@ const SendDirectMessage = require('../controllers/sendMessagetoUser');
 const TwitterCRON = require('./../twittercron');
 const fetchSavedData = require('./../controllers/fetchSavedData');
 const followers = require('./../controllers/pullFollowers');
+const verify = require('./../controllers/verifyMe');
+
 
 //importation du middleware/password :
 const auth = require('../middleware/auth');
@@ -39,6 +41,7 @@ router.get('/savedTweets', fetchSavedData.getSavedTweets);
 router.get('/savedMostActiveUsers', fetchSavedData.getMostActiveUsers);
 router.get('/savedMostActiveUserForATweet/:id', fetchSavedData.getMostActiveUsersForTweet);
 router.get('/followers', followers.getFollowers);
+router.get('/verify', verify.verifyME);
 
 //Exportation du fichier user.js de routes :
 module.exports = router;
