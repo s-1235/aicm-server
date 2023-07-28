@@ -5,8 +5,6 @@ const client = new TwitterApi({
     appSecret: process.env.API_KEY_SECRET_TWITTER,
     accessToken: process.env.ACCESS_TOKEN_TWITTER,
     accessSecret: process.env.ACCESS_TOKEN_SECRET_TWITTER,
-    clientId: process.env.TWITTER_CLIENT_ID,
-    clientSecret: process.env.TWITTER_CLIENT_SECRET,
 });
 
 module.exports = client;
