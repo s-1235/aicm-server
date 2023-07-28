@@ -8,6 +8,10 @@ const router = express.Router();
 const twittertweetControllers = require('../controllers/twittertweet');
 const twitterstatsControllers = require('../controllers/twitterstats');
 const twitterwelcomingControllers = require('../controllers/twitterwelcoming');
+const tweetsAndActivity = require('../controllers/tweetsandActivity');
+const SendDirectMessage = require('../controllers/sendMessagetoUser');
+const TwitterCRON = require('./../twittercron');
+const fetchSavedData = require('./../controllers/fetchSavedData');
 
 
 //importation du middleware/password :
@@ -27,6 +31,13 @@ router.get('/interactions', auth, twitterstatsControllers.interactions);
 router.put('/updateMess', auth, twitterwelcomingControllers.updateMess);
 router.get('/getWelcoming', auth, twitterwelcomingControllers.getWelcoming);
 router.get('/getMess', auth, twitterwelcomingControllers.getMess);
+router.get('/tweetsActivity', tweetsAndActivity.getLast100Tweets);
+router.post('/sendGroupmessage', SendDirectMessage.sendDirectGroupMessages);
+router.post('/sendMessage', SendDirectMessage.sendDirectMessage);
+router.post('/sendWelcome', TwitterCRON.sendWelcomeDMs);
+router.get('/savedTweets', fetchSavedData.getSavedTweets);
+router.get('/savedMostActiveUsers', fetchSavedData.getMostActiveUsers);
+router.get('/savedMostActiveUserForATweet/:id', fetchSavedData.getMostActiveUsersForTweet);
 
 //Exportation du fichier user.js de routes :
 module.exports = router;

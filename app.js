@@ -13,6 +13,9 @@ const path = require('path');
 //Importation de helmet :
 const helmet = require("helmet");
 
+//CORS
+const cors = require('cors');
+
 
 
 //Importation de fichier user.js de routes :
@@ -27,14 +30,17 @@ const cookieParser = require('cookie-parser');
 //logger les requests et les responses :
 app.use(morgan('dev'));
 
+// Enable CORS 
+app.use(cors());
+
 // CORS configuration:
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'https://aicmiranfree.online'); 
-    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    res.setHeader('Access-Control-Allow-Credentials', 'true'); 
-    next();
-  });
+// app.use((req, res, next) => {
+//     res.setHeader('Access-Control-Allow-Origin', 'https://aicmiranfree.online'); 
+//     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
+//     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+//     res.setHeader('Access-Control-Allow-Credentials', 'true'); 
+//     next();
+//   });
 
 
 
