@@ -41,6 +41,7 @@ router.get('/savedTweets', auth, fetchSavedData.getSavedTweets);
 router.get('/savedMostActiveUsers',auth, fetchSavedData.getMostActiveUsers);
 router.get('/savedMostActiveUserForATweet/:id', auth, fetchSavedData.getMostActiveUsersForTweet);
 router.get('/followers', auth, followers.getFollowers);
+router.get('/endfollowers', auth, followers.getTwitterFollowers);
 router.get('/verify',auth, verify.verifyME);
 
 //Exportation du fichier user.js de routes :
