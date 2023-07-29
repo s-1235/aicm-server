@@ -33,15 +33,15 @@ router.get('/interactions', auth, twitterstatsControllers.interactions);
 router.put('/updateMess', auth, twitterwelcomingControllers.updateMess);
 router.get('/getWelcoming', auth, twitterwelcomingControllers.getWelcoming);
 router.get('/getMess', auth, twitterwelcomingControllers.getMess);
-router.get('/tweetsActivity', tweetsAndActivity.getLast100Tweets);
-router.post('/sendGroupmessage', SendDirectMessage.sendDirectGroupMessages);
-router.post('/sendMessage', SendDirectMessage.sendDirectMessage);
-router.post('/sendWelcome', TwitterCRON.sendWelcomeDMs);
-router.get('/savedTweets', fetchSavedData.getSavedTweets);
-router.get('/savedMostActiveUsers', fetchSavedData.getMostActiveUsers);
-router.get('/savedMostActiveUserForATweet/:id', fetchSavedData.getMostActiveUsersForTweet);
-router.get('/followers', followers.getFollowers);
-router.get('/verify', verify.verifyME);
+router.get('/tweetsActivity', auth, tweetsAndActivity.getLast100Tweets);
+router.post('/sendGroupmessage', auth, SendDirectMessage.sendDirectGroupMessages);
+router.post('/sendMessage', auth, SendDirectMessage.sendDirectMessage);
+router.post('/sendWelcome', auth, TwitterCRON.sendWelcomeDMs);
+router.get('/savedTweets', auth, fetchSavedData.getSavedTweets);
+router.get('/savedMostActiveUsers',auth, fetchSavedData.getMostActiveUsers);
+router.get('/savedMostActiveUserForATweet/:id', auth, fetchSavedData.getMostActiveUsersForTweet);
+router.get('/followers', auth, followers.getFollowers);
+router.get('/verify',auth, verify.verifyME);
 
 //Exportation du fichier user.js de routes :
 module.exports = router;
