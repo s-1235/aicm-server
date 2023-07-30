@@ -21,8 +21,8 @@ const auth = require('../middleware/auth');
 
 
 //Route Twitter Tweet:
-router.post('/generate', auth, twittertweetControllers.generate);
-router.post('/post', auth, twittertweetControllers.post);
+router.post('/generate', auth, twittertweetControllers.generateAndPost);
+router.post('/post', auth, twittertweetControllers.generateAndPost);
 
 //Route Twitter Stats
 router.post('/updateStatsbot', auth, twitterstatsControllers.updateStats);
