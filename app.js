@@ -16,6 +16,20 @@ const helmet = require("helmet");
 //CORS
 const cors = require('cors');
 
+const multer = require('multer');
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, 'uploads/');
+    },
+    filename: function (req, file, cb) {
+      cb(null, file.fieldname + '-' + Date.now());
+    }
+  });
+  
+  var upload = multer({ storage: storage });
+  
+
+
 
 
 //Importation de fichier user.js de routes :
@@ -32,6 +46,9 @@ app.use(morgan('dev'));
 
 // Enable CORS 
 app.use(cors());
+
+// in your Express app setup:
+app.use(upload.array('imageData', 'tweetContent')); // for parsing multipart/form-data
 
 // CORS configuration:
 // app.use((req, res, next) => {
