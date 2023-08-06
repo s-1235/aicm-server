@@ -1,11 +1,18 @@
 const http = require('http');
+const express = require('express');
 const app = require('./app');
 const cron = require('node-cron');
-const {sendWelcomeDMs, fetchStats} = require('./twittercron');
+const { sendWelcomeDMs, fetchStats } = require('./twittercron');
 const passport = require('passport');
-const { Strategy } = require('@superfaceai/passport-twitter-oauth2');
+const { Strategy: TwitterStrategy } = require('@superfaceai/passport-twitter-oauth2');
 const session = require('express-session');
 const Admin = require('./models/Admin');
+const { TwitterApi } = require('twitter-api-v2');
+
+// Replace these with your actual keys
+const CONSUMER_KEY = process.env.API_KEY_TWITTER;
+const CONSUMER_SECRET = process.env.API_KEY_SECRET_TWITTER;
+const CALLBACK_URL = 'http://localhost:3000/auth/twitter/callback';
 
 passport.serializeUser(function (user, done) {
   done(null, user);
@@ -14,14 +21,12 @@ passport.deserializeUser(function (obj, done) {
   done(null, obj);
 });
 
-
 passport.use(
-  new Strategy(
+  new TwitterStrategy(
     {
-      clientID: process.env.TWITTER_CLIENT_ID,
-      clientSecret: process.env.TWITTER_CLIENT_SECRET,
-      clientType: 'confidential',
-      callbackURL: `${process.env.BASE_URL}/auth/twitter/callback`,
+      clientID: CONSUMER_KEY,
+      clientSecret: CONSUMER_SECRET,
+      callbackURL: CALLBACK_URL,
     },
     (token, tokenSecret, profile, done) => {
       Admin.findOne({ twitterId: profile.id }, (err, admin) => {
@@ -45,7 +50,7 @@ passport.use(
           const newAdmin = new Admin({
             twitterId: profile.id,
             token: token,
-            tokenSecret: tokenSecret
+            tokenSecret: tokenSecret,
             // email and password would need to be set separately
           });
 
@@ -56,12 +61,12 @@ passport.use(
             return done(null, newAdmin);
           });
         }
-      })
+      });
     }
   )
 );
 
-const normalizePort = val => {
+const normalizePort = (val) => {
   const port = parseInt(val, 10);
 
   if (isNaN(port)) {
@@ -72,10 +77,10 @@ const normalizePort = val => {
   }
   return false;
 };
-const port = normalizePort(process.env.PORT || '3000');
+const port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
-const errorHandler = error => {
+const errorHandler = (error) => {
   if (error.syscall !== 'listen') {
     throw error;
   }
@@ -96,30 +101,46 @@ const errorHandler = error => {
 };
 
 app.use(passport.initialize());
-app.use(
-  session({ secret: 'keyboard cat', resave: false, saveUninitialized: true })
-);
+app.use(session({ secret: 'keyboard cat', resave: false, saveUninitialized: true }));
 
-// <5> Start authentication flow
-app.get(
-  '/auth/twitter',
-  passport.authenticate('twitter', {
-    // <6> Scopes
-    scope: ['tweet.read', 'users.read', 'offline.access'],
-  })
-);
+// Step 1: Create the auth link
+app.get('/auth/twitter', (req, res, next) => {
+  const client = new TwitterApi({ appKey: CONSUMER_KEY, appSecret: CONSUMER_SECRET });
+  client
+    .generateAuthLink(CALLBACK_URL)
+    .then((authLink) => {
+      req.session.oauth_token = authLink.oauth_token;
+      req.session.oauth_token_secret = authLink.oauth_token_secret;
+      res.redirect(authLink.url);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Failed to generate auth link.');
+    });
+});
 
-// <7> Callback handler
-app.get(
-  '/auth/twitter/callback',
-  passport.authenticate('twitter'),
-  function (req, res) {
-    const userData = JSON.stringify(req.user, undefined, 2);
-    res.end(
-      `<h1>Authentication succeeded</h1> User data: <pre>${userData}</pre>`
-    );
-  }
-);
+// Step 2: Handle the callback and exchange temporary tokens for persistent tokens
+app.get('/auth/twitter/callback', (req, res, next) => {
+  const client = new TwitterApi({
+    appKey: CONSUMER_KEY,
+    appSecret: CONSUMER_SECRET,
+    accessToken: req.session.oauth_token,
+    accessSecret: req.session.oauth_token_secret,
+  });
+
+  client
+    .login(req.query.oauth_verifier)
+    .then(({ client: loggedClient, accessToken, accessSecret }) => {
+      // Store accessToken & accessSecret somewhere
+      // You can access the authenticated user details using `loggedClient`
+      const userData = JSON.stringify(loggedClient, undefined, 2);
+      res.end(`<h1>Welcome Back</h1> User data: <pre>${userData}</pre>`);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Failed to exchange temporary tokens for persistent tokens.');
+    });
+});
 
 const server = http.createServer(app);
 

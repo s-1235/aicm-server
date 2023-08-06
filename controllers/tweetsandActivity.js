@@ -10,9 +10,13 @@ dotenv.config();
 
 exports.getLast100Tweets = async (req, res, next) => {
   try {
+    // Delete all previous data in both tables
+    await MostActiveUser.deleteMany({});
+    await RetrievedTweet.deleteMany({});
+
     const { data: tweets } = await client.v2.userTimeline(process.env.TWITTER_USER_ID, {
       max_results: 5,
-      'tweet.fields': 'id,text,public_metrics,referenced_tweets',
+      'tweet.fields': 'id,text,public_metrics,referenced_tweets,created_at', // Added created_at
       'user.fields': 'description,username,name,profile_image_url',
     });
 
@@ -28,7 +32,7 @@ exports.getLast100Tweets = async (req, res, next) => {
     };
 
     for (const tweet of tweets.data) {
-      const { id, text, public_metrics } = tweet;
+      const { id, text, public_metrics, created_at } = tweet;
       const { like_count, reply_count, retweet_count } = public_metrics;
 
       const likersRes = await client.v2.tweetLikedBy(id, userparams);
@@ -40,11 +44,11 @@ exports.getLast100Tweets = async (req, res, next) => {
       const userInteractions = {};
 
       likers?.forEach(user => {
-        userInteractions[user.id] = (userInteractions[user.id] || 0) + 1; // Increase score by 1 for each like
+        userInteractions[user.id] = (userInteractions[user.id] || 0) + 1;
       });
 
       retweeters?.forEach(user => {
-        userInteractions[user.id] = (userInteractions[user.id] || 0) + 2; // Increase score by 2 for each retweet
+        userInteractions[user.id] = (userInteractions[user.id] || 0) + 2;
       });
 
       let mostActiveUserIds = [];
@@ -78,11 +82,11 @@ exports.getLast100Tweets = async (req, res, next) => {
         likes: like_count,
         replies: reply_count,
         retweets: retweet_count,
-        mostActiveUser: mostActiveUsers.length > 1 ? mostActiveUsers : (mostActiveUsers[0] || 'N/A'),
+        mostActiveUser: mostActiveUsers.length > 0 ? mostActiveUsers : [],
+        createdAt: new Date(created_at) // Setting the createdAt field
       };
 
       tweetDataList.push(tweetDataItem);
-
       mostActiveUserList.push(...mostActiveUsers);
     }
 
@@ -92,7 +96,7 @@ exports.getLast100Tweets = async (req, res, next) => {
     // Save most active user data to DB
     await MostActiveUser.insertMany(mostActiveUserList);
 
-    res.status(200).json(tweetDataList); // Send the response with resolved tweetDataList
+    res.status(200).json(tweetDataList);
   } catch (error) {
     console.error('Error retrieving tweets:', error);
     res.status(500).json({ message: 'An error occurred while retrieving tweets.' });
